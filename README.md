@@ -15,7 +15,6 @@ A RESTful API for managing payroll, employees, and attendance tracking.
   - [Authentication](#authentication)
   - [Endpoints](#endpoints)
     - [POST /api/auth/login](#post-apiauthlogin)
-- [Default Admin Account](#default-admin-account)
 
 ---
 
@@ -88,6 +87,11 @@ DB_DATABASE=/absolute/path/to/database.sqlite
    ```bash
    php artisan db:seed
    ```
+
+   This will create an admin account with the following credentials:
+   - **Email:** `admin@payroll.com`
+   - **Password:** `admin123`
+   - **Role:** `admin`
 
 ---
 
@@ -197,16 +201,6 @@ Accept: application/json
     }
 }
 ```
-
----
-
-## 🔑 Default Admin Account
-
-For testing purposes, use the following credentials:
-
-- **Email:** `admin@payroll.com`
-- **Password:** `admin123`
-- **Role:** `admin`
 
 ---
 

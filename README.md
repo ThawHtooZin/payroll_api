@@ -14,7 +14,11 @@ A RESTful API for managing payroll, employees, and attendance tracking.
   - [Base URL](#base-url)
   - [Authentication](#authentication)
   - [Endpoints](#endpoints)
-    - [POST /api/auth/login](#post-apiauthlogin)
+    - [Authentication Endpoints](#authentication-endpoints)
+      - [POST /api/auth/login](#post-apiauthlogin)
+    - [Admin Endpoints](#admin-endpoints)
+      - [GET /api/admin/calendar/month](#get-apiadmincalendarmonth)
+      - [GET /api/admin/calendar/year](#get-apiadmincalendaryear)
 
 ---
 
@@ -197,6 +201,140 @@ Accept: application/json
         ],
         "password": [
             "The password field is required."
+        ]
+    }
+}
+```
+
+---
+
+## 🔐 Admin Endpoints
+
+All admin endpoints require authentication and admin role. All admin endpoints are prefixed with `/api/admin/`
+
+---
+
+### GET /api/admin/calendar/month
+
+Get all calendar data for a specific month (Admin only).
+
+#### Request
+
+**URL:** `GET /api/admin/calendar/month`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Query Parameters:**
+- `month` (required, integer): Month number (1-12)
+- `year` (required, integer): Year (2020-2030)
+
+**Example:**
+```
+GET /api/admin/calendar/month?month=1&year=2025
+```
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "month": 1,
+    "year": 2025,
+    "month_name": "January",
+    "total_days": 31,
+    "work_days": 23,
+    "weekend_days": 8,
+    "calendar_data": [
+        {
+            "id": 1,
+            "date": "2025-01-01",
+            "day_name": "Wednesday",
+            "is_work_day": true,
+            "remark": "Normal workday",
+            "created_at": "2025-01-08T08:30:00.000000Z",
+            "updated_at": "2025-01-08T08:30:00.000000Z"
+        }
+    ]
+}
+```
+
+---
+
+### GET /api/admin/calendar/year
+
+Get all calendar data for an entire year (Admin only).
+
+#### Request
+
+**URL:** `GET /api/admin/calendar/year`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Query Parameters:**
+- `year` (required, integer): Year (2020-2030)
+
+**Example:**
+```
+GET /api/admin/calendar/year?year=2025
+```
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "year": 2025,
+    "total_days": 365,
+    "total_work_days": 261,
+    "total_weekend_days": 104,
+    "monthly_data": {
+        "January": {
+            "month": 1,
+            "month_name": "January",
+            "total_days": 31,
+            "work_days": 23,
+            "weekend_days": 8,
+            "calendar_data": [...]
+        },
+        "February": {
+            "month": 2,
+            "month_name": "February",
+            "total_days": 28,
+            "work_days": 20,
+            "weekend_days": 8,
+            "calendar_data": [...]
+        }
+    }
+}
+```
+
+**Error Responses:**
+
+**403 Forbidden - Insufficient Permissions:**
+```json
+{
+    "message": "Insufficient permissions. Required role: admin"
+}
+```
+
+**422 Unprocessable Entity - Validation Error:**
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "month": [
+            "The month field is required."
+        ],
+        "year": [
+            "The year must be between 2020 and 2030."
         ]
     }
 }

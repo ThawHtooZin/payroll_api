@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->date('date');
+            $table->foreignId('work_calendar_id')->constrained('work_calendars')->onDelete('cascade');
             $table->datetime('check_in')->nullable();
             $table->string('location')->nullable();
-            $table->string('image')->nullable();
             $table->datetime('check_out')->nullable();
             $table->string('status', 200);
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

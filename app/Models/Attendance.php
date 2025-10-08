@@ -9,7 +9,7 @@ class Attendance extends Model
 {
     protected $fillable = [
         'employee_id',
-        'date',
+        'work_calendar_id',
         'check_in',
         'location',
         'check_out',
@@ -18,7 +18,6 @@ class Attendance extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
         'check_in' => 'datetime',
         'check_out' => 'datetime',
     ];
@@ -29,5 +28,13 @@ class Attendance extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    /**
+     * Get the work calendar that owns the attendance.
+     */
+    public function workCalendar(): BelongsTo
+    {
+        return $this->belongsTo(WorkCalendar::class);
     }
 }

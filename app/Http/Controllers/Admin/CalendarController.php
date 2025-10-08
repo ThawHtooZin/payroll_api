@@ -80,4 +80,80 @@ class CalendarController extends Controller
             'monthly_data' => $result
         ]);
     }
+
+    /**
+     * Update a specific calendar day status (Admin only)
+     */
+    public function updateCalendarDayStatus(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'is_work_day' => 'required|boolean',
+            'remark' => 'nullable|string|max:255'
+        ]);
+
+        $date = $request->date;
+        $isWorkDay = $request->is_work_day;
+        $remark = $request->remark;
+
+        // Find the calendar entry for the specific date
+        $calendarDay = WorkCalendar::whereDate('date', $date)->first();
+
+        if (!$calendarDay) {
+            return response()->json([
+                'message' => 'Calendar entry not found for the specified date'
+            ], 404);
+        }
+
+        // Update the calendar day status
+        $calendarDay->update([
+            'is_work_day' => $isWorkDay,
+            'remark' => $remark ?? ($isWorkDay ? 'Normal workday' : 'Non-working day')
+        ]);
+
+        return response()->json([
+            'message' => 'Calendar day status updated successfully',
+            'calendar_day' => $calendarDay
+        ]);
+    }
+
+    /**
+     * Bulk update calendar days status (Admin only)
+     */
+    public function bulkUpdateCalendarDays(Request $request)
+    {
+        $request->validate([
+            'dates' => 'required|array|min:1',
+            'dates.*' => 'required|date',
+            'is_work_day' => 'required|boolean',
+            'remark' => 'nullable|string|max:255'
+        ]);
+
+        $dates = $request->dates;
+        $isWorkDay = $request->is_work_day;
+        $remark = $request->remark;
+
+        $updatedCount = 0;
+        $notFoundDates = [];
+
+        foreach ($dates as $date) {
+            $calendarDay = WorkCalendar::whereDate('date', $date)->first();
+            
+            if ($calendarDay) {
+                $calendarDay->update([
+                    'is_work_day' => $isWorkDay,
+                    'remark' => $remark ?? ($isWorkDay ? 'Normal workday' : 'Non-working day')
+                ]);
+                $updatedCount++;
+            } else {
+                $notFoundDates[] = $date;
+            }
+        }
+
+        return response()->json([
+            'message' => "Bulk update completed. Updated {$updatedCount} calendar days.",
+            'updated_count' => $updatedCount,
+            'not_found_dates' => $notFoundDates
+        ]);
+    }
 }

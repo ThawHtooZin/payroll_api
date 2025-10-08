@@ -31,5 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Calendar routes - Get ALL the calendar data! XD
         Route::get('/calendar/month', [CalendarController::class, 'getMonthCalendar']);
         Route::get('/calendar/year', [CalendarController::class, 'getYearCalendar']);
+        
+        // Calendar management routes - Change day status! XD
+        Route::put('/calendar/day/status', [CalendarController::class, 'updateCalendarDayStatus']);
+        Route::put('/calendar/days/bulk-update', [CalendarController::class, 'bulkUpdateCalendarDays']);
     });
 });

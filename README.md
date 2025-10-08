@@ -19,6 +19,8 @@ A RESTful API for managing payroll, employees, and attendance tracking.
     - [Admin Endpoints](#admin-endpoints)
       - [GET /api/admin/calendar/month](#get-apiadmincalendarmonth)
       - [GET /api/admin/calendar/year](#get-apiadmincalendaryear)
+      - [PUT /api/admin/calendar/day/status](#put-apiadmincalendardaystatus)
+      - [PUT /api/admin/calendar/days/bulk-update](#put-apiadmincalendardaysbulk-update)
 
 ---
 
@@ -335,6 +337,155 @@ GET /api/admin/calendar/year?year=2025
         ],
         "year": [
             "The year must be between 2020 and 2030."
+        ]
+    }
+}
+```
+
+---
+
+### PUT /api/admin/calendar/day/status
+
+Update a specific calendar day status (Admin only).
+
+#### Request
+
+**URL:** `PUT /api/admin/calendar/day/status`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**Body:**
+```json
+{
+    "date": "2025-12-25",
+    "is_work_day": false,
+    "remark": "Christmas Day - Company Holiday"
+}
+```
+
+**Required Fields:**
+- `date` (string): Date in YYYY-MM-DD format
+- `is_work_day` (boolean): true for work day, false for non-work day
+
+**Optional Fields:**
+- `remark` (string): Custom remark for the day (max 255 characters)
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "message": "Calendar day status updated successfully",
+    "calendar_day": {
+        "id": 365,
+        "date": "2025-12-25",
+        "day_name": "Thursday",
+        "is_work_day": false,
+        "remark": "Christmas Day - Company Holiday",
+        "created_at": "2025-01-08T08:30:00.000000Z",
+        "updated_at": "2025-01-08T10:15:00.000000Z"
+    }
+}
+```
+
+**Error Responses:**
+
+**404 Not Found - Calendar Entry Not Found:**
+```json
+{
+    "message": "Calendar entry not found for the specified date"
+}
+```
+
+**422 Unprocessable Entity - Validation Error:**
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "date": [
+            "The date field is required."
+        ],
+        "is_work_day": [
+            "The is work day field is required."
+        ]
+    }
+}
+```
+
+---
+
+### PUT /api/admin/calendar/days/bulk-update
+
+Bulk update multiple calendar days status (Admin only).
+
+#### Request
+
+**URL:** `PUT /api/admin/calendar/days/bulk-update`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**Body:**
+```json
+{
+    "dates": [
+        "2025-12-25",
+        "2025-12-26",
+        "2025-01-01"
+    ],
+    "is_work_day": false,
+    "remark": "Holiday Season - Company Closed"
+}
+```
+
+**Required Fields:**
+- `dates` (array): Array of dates in YYYY-MM-DD format
+- `is_work_day` (boolean): true for work day, false for non-work day
+
+**Optional Fields:**
+- `remark` (string): Custom remark for all days (max 255 characters)
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "message": "Bulk update completed. Updated 3 calendar days.",
+    "updated_count": 3,
+    "not_found_dates": []
+}
+```
+
+**Partial Success Response (200 OK):**
+```json
+{
+    "message": "Bulk update completed. Updated 2 calendar days.",
+    "updated_count": 2,
+    "not_found_dates": ["2025-12-31"]
+}
+```
+
+**Error Responses:**
+
+**422 Unprocessable Entity - Validation Error:**
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "dates": [
+            "The dates field is required."
+        ],
+        "is_work_day": [
+            "The is work day field is required."
         ]
     }
 }

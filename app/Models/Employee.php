@@ -14,10 +14,12 @@ class Employee extends Model
         'position',
         'level',
         'base_salary',
+        'is_active',
     ];
 
     protected $casts = [
         'base_salary' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     /**

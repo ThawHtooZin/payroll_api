@@ -17,6 +17,11 @@ A RESTful API for managing payroll, employees, and attendance tracking.
     - [Authentication Endpoints](#authentication-endpoints)
       - [POST /api/auth/login](#post-apiauthlogin)
     - [Admin Endpoints](#admin-endpoints)
+      - [GET /api/admin/users](#get-apiadminusers)
+      - [POST /api/admin/users](#post-apiadminusers)
+      - [GET /api/admin/users/{user}](#get-apiadminusersuser)
+      - [PUT /api/admin/users/{user}](#put-apiadminusersuser)
+      - [DELETE /api/admin/users/{user}](#delete-apiadminusersuser)
       - [GET /api/admin/calendar/month](#get-apiadmincalendarmonth)
       - [GET /api/admin/calendar/year](#get-apiadmincalendaryear)
       - [PUT /api/admin/calendar/day/status](#put-apiadmincalendardaystatus)
@@ -213,6 +218,330 @@ Accept: application/json
 ## 🔐 Admin Endpoints
 
 All admin endpoints require authentication and admin role. All admin endpoints are prefixed with `/api/admin/`
+
+---
+
+### GET /api/admin/users
+
+Get a paginated list of all users with optional filtering and search (Admin only).
+
+#### Request
+
+**URL:** `GET /api/admin/users`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Query Parameters:**
+- `role` (optional, string): Filter by user role (admin, employee)
+- `search` (optional, string): Search by name, email, or phone
+- `per_page` (optional, integer): Number of results per page (default: 15)
+- `page` (optional, integer): Page number (default: 1)
+
+**Example:**
+```
+GET /api/admin/users?role=employee&search=john&per_page=10&page=1
+```
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "1234567890",
+            "role": "employee",
+            "email_verified_at": null,
+            "created_at": "2025-01-08T08:30:00.000000Z",
+            "updated_at": "2025-01-08T08:30:00.000000Z"
+        },
+        {
+            "id": 2,
+            "name": "Jane Smith",
+            "email": "jane@example.com",
+            "phone": "0987654321",
+            "role": "admin",
+            "email_verified_at": null,
+            "created_at": "2025-01-08T08:30:00.000000Z",
+            "updated_at": "2025-01-08T08:30:00.000000Z"
+        }
+    ],
+    "first_page_url": "http://localhost:8000/api/admin/users?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://localhost:8000/api/admin/users?page=1",
+    "links": [...],
+    "next_page_url": null,
+    "path": "http://localhost:8000/api/admin/users",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 2,
+    "total": 2
+}
+```
+
+---
+
+### POST /api/admin/users
+
+Create a new user (Admin only).
+
+#### Request
+
+**URL:** `POST /api/admin/users`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**Body:**
+```json
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "1234567890",
+    "password": "password123",
+    "role": "employee"
+}
+```
+
+**Required Fields:**
+- `name` (string, max: 255): User's full name
+- `email` (string, max: 255): User's email address (must be unique)
+- `phone` (string, max: 255): User's phone number
+- `password` (string, min: 8): User's password
+- `role` (string): User role - must be either "admin" or "employee"
+
+#### Response
+
+**Success Response (201 Created):**
+```json
+{
+    "message": "User created successfully",
+    "user": {
+        "id": 3,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "1234567890",
+        "role": "employee",
+        "email_verified_at": null,
+        "created_at": "2025-01-08T10:30:00.000000Z",
+        "updated_at": "2025-01-08T10:30:00.000000Z"
+    }
+}
+```
+
+**Error Responses:**
+
+**422 Unprocessable Entity - Validation Error:**
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "email": [
+            "The email has already been taken."
+        ],
+        "password": [
+            "The password field must be at least 8 characters."
+        ],
+        "role": [
+            "The selected role is invalid."
+        ]
+    }
+}
+```
+
+---
+
+### GET /api/admin/users/{user}
+
+Get a specific user by ID (Admin only).
+
+#### Request
+
+**URL:** `GET /api/admin/users/{user}`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**URL Parameters:**
+- `user` (required, integer): User ID
+
+**Example:**
+```
+GET /api/admin/users/3
+```
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "id": 3,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "1234567890",
+    "role": "employee",
+    "email_verified_at": null,
+    "created_at": "2025-01-08T10:30:00.000000Z",
+    "updated_at": "2025-01-08T10:30:00.000000Z"
+}
+```
+
+**Error Responses:**
+
+**404 Not Found - User Not Found:**
+```json
+{
+    "message": "No query results for model [App\\Models\\User] {user_id}"
+}
+```
+
+---
+
+### PUT /api/admin/users/{user}
+
+Update a specific user (Admin only).
+
+#### Request
+
+**URL:** `PUT /api/admin/users/{user}`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**URL Parameters:**
+- `user` (required, integer): User ID
+
+**Body:**
+```json
+{
+    "name": "John Updated",
+    "email": "john.updated@example.com",
+    "phone": "1112223333",
+    "password": "newpassword123",
+    "role": "admin"
+}
+```
+
+**Optional Fields (all fields are optional):**
+- `name` (string, max: 255): User's full name
+- `email` (string, max: 255): User's email address (must be unique)
+- `phone` (string, max: 255): User's phone number
+- `password` (string, min: 8): User's new password
+- `role` (string): User role - must be either "admin" or "employee"
+
+**Example:**
+```
+PUT /api/admin/users/3
+```
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "message": "User updated successfully",
+    "user": {
+        "id": 3,
+        "name": "John Updated",
+        "email": "john.updated@example.com",
+        "phone": "1112223333",
+        "role": "admin",
+        "email_verified_at": null,
+        "created_at": "2025-01-08T10:30:00.000000Z",
+        "updated_at": "2025-01-08T11:15:00.000000Z"
+    }
+}
+```
+
+**Error Responses:**
+
+**422 Unprocessable Entity - Validation Error:**
+```json
+{
+    "message": "The given data was invalid.",
+    "errors": {
+        "email": [
+            "The email has already been taken."
+        ]
+    }
+}
+```
+
+**404 Not Found - User Not Found:**
+```json
+{
+    "message": "No query results for model [App\\Models\\User] {user_id}"
+}
+```
+
+---
+
+### DELETE /api/admin/users/{user}
+
+Delete a specific user (Admin only).
+
+#### Request
+
+**URL:** `DELETE /api/admin/users/{user}`
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**URL Parameters:**
+- `user` (required, integer): User ID
+
+**Example:**
+```
+DELETE /api/admin/users/3
+```
+
+#### Response
+
+**Success Response (200 OK):**
+```json
+{
+    "message": "User deleted successfully"
+}
+```
+
+**Error Responses:**
+
+**403 Forbidden - Cannot Delete Own Account:**
+```json
+{
+    "message": "Cannot delete your own account"
+}
+```
+
+**404 Not Found - User Not Found:**
+```json
+{
+    "message": "No query results for model [App\\Models\\User] {user_id}"
+}
+```
 
 ---
 

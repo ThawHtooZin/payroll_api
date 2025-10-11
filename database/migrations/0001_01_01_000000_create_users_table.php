@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('phone', 255);
             $table->string('password', 255);
             $table->string('role', 255);
+            $table->unsignedBigInteger('employee_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

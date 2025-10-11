@@ -4,13 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employee extends Model
 {
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
         'position',
         'level',
         'base_salary',
@@ -21,6 +19,14 @@ class Employee extends Model
         'base_salary' => 'integer',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the user associated with the employee.
+     */
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
+    }
 
     /**
      * Get the attendances for the employee.

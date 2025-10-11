@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255);
-            $table->string('email', 255)->unique();
-            $table->string('phone', 11);
             $table->string('position', 255);
             $table->string('level', 255);
             $table->integer('base_salary');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

@@ -30,7 +30,7 @@ class GenerateDailyAttendance extends Command
     {
         $this->info('Starting daily attendance generation...');
 
-        $today = now()->toDateString();
+        $today = app_now()->toDateString();
         
         // Get or create today's work calendar entry
         $calendar = WorkCalendar::where('date', $today)->first();

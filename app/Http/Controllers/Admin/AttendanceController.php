@@ -90,7 +90,7 @@ class AttendanceController extends Controller
             'image' => 'nullable|string|max:255',
         ]);
 
-        $today = now()->toDateString();
+        $today = app_now()->toDateString();
         
         // Find today's attendance record for the employee
         $attendance = Attendance::whereHas('workCalendar', function ($q) use ($today) {
@@ -110,7 +110,7 @@ class AttendanceController extends Controller
         }
 
         $attendance->update([
-            'check_in' => now(),
+            'check_in' => app_now(),
             'location' => $validated['location'] ?? null,
             'image' => $validated['image'] ?? null,
             'status' => 'Present',
@@ -131,7 +131,7 @@ class AttendanceController extends Controller
             'employee_id' => 'required|exists:employees,id',
         ]);
 
-        $today = now()->toDateString();
+        $today = app_now()->toDateString();
         
         // Find today's attendance record for the employee
         $attendance = Attendance::whereHas('workCalendar', function ($q) use ($today) {
@@ -157,7 +157,7 @@ class AttendanceController extends Controller
         }
 
         $attendance->update([
-            'check_out' => now(),
+            'check_out' => app_now(),
         ]);
 
         return response()->json([
@@ -195,5 +195,109 @@ class AttendanceController extends Controller
         ];
 
         return response()->json($summary);
+    }
+
+    /**
+     * Get logged-in user's attendance records
+     */
+    public function myRecords(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user->employee_id) {
+            return response()->json([
+                'message' => 'No employee record found for this user'
+            ], 404);
+        }
+
+        $query = Attendance::with(['workCalendar'])
+            ->where('employee_id', $user->employee_id);
+
+        // Filter by date range if provided
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereHas('workCalendar', function ($q) use ($request) {
+                $q->whereBetween('date', [$request->start_date, $request->end_date]);
+            });
+        }
+
+        $attendances = $query->orderBy('created_at', 'desc')->paginate(50);
+
+        return response()->json($attendances);
+    }
+
+    /**
+     * Get today's attendance record for logged-in user
+     */
+    public function today(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user->employee_id) {
+            return response()->json([
+                'message' => 'No employee record found for this user'
+            ], 404);
+        }
+
+        $today = app_now()->toDateString();
+        
+        $attendance = Attendance::with(['workCalendar'])
+            ->whereHas('workCalendar', function ($q) use ($today) {
+                $q->where('date', $today);
+            })
+            ->where('employee_id', $user->employee_id)
+            ->first();
+
+        if (!$attendance) {
+            return response()->json([
+                'message' => 'No attendance record found for today'
+            ], 404);
+        }
+
+        return response()->json($attendance);
+    }
+
+    /**
+     * Get attendance statistics for logged-in user
+     */
+    public function myStats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user->employee_id) {
+            return response()->json([
+                'message' => 'No employee record found for this user'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $endDate = $validated['end_date'] ?? $validated['start_date'];
+
+        $stats = [
+            'present' => Attendance::whereHas('workCalendar', function ($q) use ($validated, $endDate) {
+                $q->whereBetween('date', [$validated['start_date'], $endDate]);
+            })->where('employee_id', $user->employee_id)
+              ->where('status', 'Present')->count(),
+            
+            'absent' => Attendance::whereHas('workCalendar', function ($q) use ($validated, $endDate) {
+                $q->whereBetween('date', [$validated['start_date'], $endDate]);
+            })->where('employee_id', $user->employee_id)
+              ->where('status', 'Absent')->count(),
+            
+            'pending' => Attendance::whereHas('workCalendar', function ($q) use ($validated, $endDate) {
+                $q->whereBetween('date', [$validated['start_date'], $endDate]);
+            })->where('employee_id', $user->employee_id)
+              ->where('status', 'Pending')->count(),
+            
+            'off_day' => Attendance::whereHas('workCalendar', function ($q) use ($validated, $endDate) {
+                $q->whereBetween('date', [$validated['start_date'], $endDate]);
+            })->where('employee_id', $user->employee_id)
+              ->where('status', 'Off Day')->count(),
+        ];
+
+        return response()->json($stats);
     }
 }

@@ -69,6 +69,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Test Mode Configuration
+    |--------------------------------------------------------------------------
+    |
+    | When TEST_MODE is enabled, the application will use the TEST_TIME value
+    | instead of the actual current time. This is useful for testing time-
+    | dependent features like attendance check-in/check-out without changing
+    | your system clock.
+    |
+    */
+
+    'test_mode' => env('TEST_MODE', false),
+    'test_time' => env('TEST_TIME', null),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

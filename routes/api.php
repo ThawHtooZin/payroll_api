@@ -31,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Attendance routes for authenticated users (non-admin)
     Route::prefix('attendance')->group(function () {
+        Route::get('/my-records', [AttendanceController::class, 'myRecords']);
+        Route::get('/today', [AttendanceController::class, 'today']);
+        Route::get('/my-stats', [AttendanceController::class, 'myStats']);
         Route::post('/check-in', [AttendanceController::class, 'checkIn']);
         Route::post('/check-out', [AttendanceController::class, 'checkOut']);
     });
